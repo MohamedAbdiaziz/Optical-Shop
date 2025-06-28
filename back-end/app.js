@@ -23,3 +23,7 @@ app.listen(port, ()=>{
 
 
 // connection to db
+const db = process.env.mongodb
+mongoose.connect(db).then(()=>{
+	console.log('connected')
+})
