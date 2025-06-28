@@ -1,0 +1,31 @@
+export default function Navbar() {
+	return(
+
+	    <nav class="bg-white shadow-lg sticky top-0 z-50">
+	        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+	            <div class="flex justify-between items-center h-16">
+	                <div class="flex items-center">
+	                    <h1 class="text-2xl font-bold text-primary">VisionCraft</h1>
+	                </div>
+	                <div class="hidden md:block">
+	                    <div class="ml-10 flex items-baseline space-x-4">
+	                        <a href="/" class="text-gray-900 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">Home</a>
+	                        <a href="/products" class="text-gray-900 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">Products</a>
+	                        <a href="/about" class="text-gray-900 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">About</a>
+	                        <a href="contact.html" class="text-gray-900 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+	                    </div>
+	                </div>
+	                <div class="flex items-center space-x-4">
+	                    <button id="cartBtn" class="relative p-2 text-gray-600 hover:text-primary">
+	                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0h9"></path>
+	                        </svg>
+	                        <span id="cartCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+	                    </button>
+	                    <a href="admin/login.html" class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Admin</a>
+	                </div>
+	            </div>
+	        </div>
+	    </nav>
+	);
+}
