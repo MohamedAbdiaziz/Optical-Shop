@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const stockSchema = new mongoose.Schema({
   
   Product: {
-    type: Number,
+    type: String,
     required: true
   },
   Quantity: {

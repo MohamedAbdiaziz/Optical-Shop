@@ -8,7 +8,7 @@ const cartItemSchema = new mongoose.Schema({
     maxlength: 50
   },
   Product: {
-    type: Number,
+    type: String,
     required: true
   },
   Quantity: {

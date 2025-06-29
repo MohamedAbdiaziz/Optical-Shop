@@ -8,7 +8,7 @@ const orderSchema = new mongoose.Schema({
     maxlength: 50
   },
   Transaction: {
-    type: Number,
+    type: String,
     required: true
   },
   Order_Date: {
@@ -32,7 +32,7 @@ const orderSchema = new mongoose.Schema({
         unique: true
       },
       Product: {
-        type: Number,
+        type: String,
         required: true
       },
       Quantity: {

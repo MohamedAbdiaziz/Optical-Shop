@@ -22,7 +22,7 @@ const productSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['actie', 'deactive'],
+    enum: ['active', 'deactive'],
     required: true
   },
   description: {
