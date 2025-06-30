@@ -68,7 +68,7 @@ export default function ManageOrders() {
                 <td className="py-2 px-4 border">{order.Customer}</td>
                 <td className="py-2 px-4 border">{order.Transaction}</td>
                 <td className="py-2 px-4 border">{new Date(order.Order_Date).toLocaleDateString()}</td>
-                <td className="py-2 px-4 border">${order.Total_Amount ? parseFloat(order.Total_Amount.toString()).toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-4 border">${order.Total_Amount ? parseFloat(order.Total_Amount?.$numberDecimal || 0).toFixed(2) : '0.00'}</td>
                 <td className="py-2 px-4 border">{order.Status}</td>
                 <td className="py-2 px-4 border space-x-2">
                   <button onClick={() => setSelectedOrder(order)} className="text-blue-600 hover:text-blue-800">
@@ -98,7 +98,7 @@ export default function ManageOrders() {
             <ul className="list-disc pl-6">
               {selectedOrder.Items.map((item, index) => (
                 <li key={index} className="mb-2">
-                  {getProductName(item.Product)} (#{item.ID}) - Quantity: {item.Quantity}, Price: ${parseFloat(item.Price.toString()).toFixed(2)}
+                  {getProductName(item.Product)} (#{item.ID}) - Quantity: {item.Quantity}, Price: ${parseFloat(item.Price?.$numberDecimal || 0).toFixed(2)}
                 </li>
               ))}
             </ul>

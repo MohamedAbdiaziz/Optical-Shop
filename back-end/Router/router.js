@@ -97,6 +97,25 @@ router.delete('/deleteuser/:id', async (req, res) => {
   }
 });
 
+router.put('/update-password', async (req, res) => {
+  const { Email, Password } = req.body;
+
+  try {
+    const updated = await tblUsers.findOneAndUpdate(
+      { Email },
+      { Password },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: 'User not found' });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating password', error: err.message });
+  }
+});
+
+
 
 
 
@@ -142,11 +161,87 @@ router.delete('/deletestock/:id', async (req, res) => {
 
 
 // cart
-router.get('/cartitems/:id', async(req, res)=>{
-	const id = req.params.id;
-	const qaade = await tblCartItem.findById(id)
-	res.send({qaade})
-})
+router.get('/cartitems/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const qaade = await tblCartItem.find({ Customer: email });
+    res.send({ qaade });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update cart item quantity
+router.put('/cartitems/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { Quantity, Subtotal } = req.body;
+
+    const updated = await tblCartItem.findByIdAndUpdate(
+      id,
+      { Quantity, Subtotal },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Cart item not found' });
+    }
+
+    res.json({ message: 'Cart item updated', item: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/cartitems/:id', async (req, res) => {
+  try {
+    const deleted = await tblCartItem.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    res.json({ message: 'Cart item deleted', item: deleted });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/cartitems', async (req, res) => {
+  try {
+    const { Customer, Product, Quantity, Price, Subtotal } = req.body;
+    Subtotal: parseFloat(Price?.$numberDecimal || 0) * Quantity;
+
+    // Check if item already exists in cart
+    const existing = await tblCartItem.findOne({ Customer, Product });
+
+    if (existing) {
+      // Update quantity and subtotal if it already exists
+      existing.Quantity += Quantity;
+      existing.Subtotal = existing.Quantity * parseFloat(existing.Price);
+      await existing.save();
+      return res.json({ message: 'Updated existing cart item', item: existing });
+    }
+
+    // Otherwise, create new item
+    const newItem = new tblCartItem({
+      Customer,
+      Product,
+      Quantity,
+      Price,
+      Subtotal
+    });
+
+    await newItem.save();
+    res.status(201).json({ message: 'Item added to cart', item: newItem });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+
 
 // orders
 router.get('/orders', async(req, res)=>{
@@ -162,6 +257,45 @@ router.put('/editorder/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// POST /create/orders
+router.post('/orders', async (req, res) => {
+  try {
+    const {
+      Customer,
+      Transaction,
+      Total_Amount,
+      Items,
+      Status = 'Pending',
+    } = req.body;
+
+    // Validate required fields
+    if (!Customer || !Transaction || !Total_Amount || !Items || !Array.isArray(Items)) {
+      return res.status(400).json({ message: 'Missing required order fields.' });
+    }
+
+    const newOrder = new tblOrder({
+      Customer,
+      Transaction,
+      Total_Amount,
+      Status,
+      Items,
+    });
+
+    const saved = await newOrder.save();
+    try {
+      const email = Customer;
+      await tblCartItem.deleteMany({ Customer: email });
+      res.json({ message: 'Cart cleared successfully' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+    res.status(201).json({ message: 'Order created successfully', order: saved });
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
 
 
 
@@ -185,6 +319,63 @@ router.post('/login', async (req, res) => {
     res.json({ success: true, token });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/customer-login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await tblUsers.findOne({ Email: email, Password: password, Role: 'customer' });
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+    res.json({
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        email: user.Email,
+        name: user.Username
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+
+
+// POST /create/register-customer
+router.post('/register-customer', async (req, res) => {
+  const { Username, Password, Email, Mobile, Address } = req.body;
+
+  try {
+    const exists = await tblUsers.findOne({ Email });
+    if (exists) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    const newUser = new tblUsers({
+      Username,
+      Password,
+      Email,
+      Role: 'customer',
+      Status: 'active',
+      Mobile,
+      Address
+    });
+
+    const saved = await newUser.save();
+
+    res.status(201).json({
+      message: 'Registration successful',
+      user: {
+        id: saved._id,
+        email: saved.Email,
+        name: saved.Username
+      }
+    });
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
